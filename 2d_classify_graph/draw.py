@@ -4,8 +4,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def draw_subplot(predictor, title, filename, X, y, x_min, x_max, y_min, y_max,
-                 reso_step=0.01):
+def draw_plot(predictor, title, filename, X, y, reso_step=0.01):
+    # create a mesh to plot in
+    x_min, x_max = X[:, 0].min() - 0.1, X[:, 0].max() + 0.1
+    y_min, y_max = X[:, 1].min() - 0.1, X[:, 1].max() + 0.1
+
     xx, yy = np.meshgrid(np.arange(x_min, x_max, reso_step),
                          np.arange(y_min, y_max, reso_step))
     pred_flat = predictor.predict(np.c_[xx.ravel(), yy.ravel()])
@@ -21,3 +24,6 @@ def draw_subplot(predictor, title, filename, X, y, x_min, x_max, y_min, y_max,
     plt.xlim(xx.min(), xx.max())
     plt.ylim(yy.min(), yy.max())
     plt.title(title)
+
+    plt.savefig(filename)
+    plt.close()

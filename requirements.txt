@@ -6,3 +6,4 @@ scikit-learn
 theano
 keras
 tensorflow-gpu
+pydot-ng

@@ -4,6 +4,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+def get_pred_classes(predictor, X):
+    pred = predictor.predict(X)
+    if pred.ndim == 1:
+        return pred
+    elif pred.ndim == 2:
+        return pred.argmax(axis=1)
+    else:
+        raise Exception('cannot recognize output of the predictor')
+
+
 def draw_plot(predictor, title, filename, X, y, reso_step=0.01):
     # create a mesh to plot in
     x_min, x_max = X[:, 0].min() - 0.1, X[:, 0].max() + 0.1
@@ -11,7 +21,7 @@ def draw_plot(predictor, title, filename, X, y, reso_step=0.01):
 
     xx, yy = np.meshgrid(np.arange(x_min, x_max, reso_step),
                          np.arange(y_min, y_max, reso_step))
-    pred_flat = predictor.predict(np.c_[xx.ravel(), yy.ravel()])
+    pred_flat = get_pred_classes(predictor, np.c_[xx.ravel(), yy.ravel()])
 
     # Put the result into a color plot
     pred = pred_flat.reshape(xx.shape)

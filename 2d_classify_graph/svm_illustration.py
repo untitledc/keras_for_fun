@@ -4,8 +4,10 @@ import demo_dataset
 from draw import draw_plot
 
 
-X, y = demo_dataset.get_breast_cancer_last2()
-#X, y = demo_dataset.get_iris()
+#X, y = demo_dataset.get_breast_cancer_last2()
+#X, y = demo_dataset.get_iris(1, 3)
+X, y = demo_dataset.get_iris()
+#X, y = demo_dataset.get_separable_dummy(10)
 
 rbf_svc = [svm.SVC(kernel='rbf', gamma=2**-7, C=2**13).fit(X, y),
            svm.SVC(kernel='rbf', gamma=2**4, C=2**13).fit(X, y),

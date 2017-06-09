@@ -2,21 +2,23 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers.advanced_activations import LeakyReLU
 from keras.utils import to_categorical
+import numpy as np
 
 import demo_dataset
 from draw import draw_plot
 
 
-#X, y = demo_dataset.get_breast_cancer_last2()
-X, y = demo_dataset.get_iris()
-#X, y = demo_dataset.get_separable_dummy(10)
-n_class = len(set(y))
-
-model = Sequential()
-if True:
+def build_default_model(model, n_class):
     model.add(Dense(2, activation='linear', input_dim=2))
     model.add(Dense(n_class, activation='softmax'))
-else:
+
+
+def build_check_weight_model(model, n_class):
+    model.add(Dense(3, activation='linear', input_dim=2))
+    model.add(Dense(4, activation='linear'))
+    model.add(Dense(2, activation='softmax'))
+
+def build_mess_around_model(model, n_class):
     model.add(Dense(20, input_dim=2))
     model.add(LeakyReLU(0.1))
     model.add(Dense(20))
@@ -25,17 +27,39 @@ else:
     model.add(LeakyReLU(0.1))
     model.add(Dense(20, activation='tanh'))
     model.add(Dense(n_class, activation='softmax'))
-model.compile(optimizer='sgd', loss='categorical_crossentropy',
-              metrics=['accuracy'])
-model.fit(X, to_categorical(y, num_classes=n_class),
-          batch_size=1,
-          epochs=20,
-          shuffle=True)
-
-# title for the plots
-title = 'FNN linear layer'
-
-plot_name = 'fnn-lin.png'
-draw_plot(model, title, plot_name, X, y, reso_step=0.005)
 
 
+def main():
+    #X, y = demo_dataset.get_breast_cancer_last2()
+    #X, y = demo_dataset.get_iris()
+    X, y = demo_dataset.get_separable_dummy(4)
+    n_class = len(set(y))
+
+    model = Sequential()
+    build_check_weight_model(model, n_class)
+    model.compile(optimizer='sgd', loss='categorical_crossentropy',
+                  metrics=['accuracy'])
+    model.fit(X, to_categorical(y, num_classes=n_class),
+              batch_size=1,
+              epochs=20,
+              shuffle=True)
+
+    print('model summary')
+    model.summary()
+    print('model weights')
+    model_weight_list = model.get_weights()
+    for model_weight in model_weight_list:
+        print(model_weight.shape)
+        print(model_weight)
+
+    # title for the plots
+    title = 'FNN linear layer'
+
+    plot_name = 'fnn-lin.png'
+    draw_plot(model, title, plot_name, X, y, reso_step=0.005)
+
+    print(model.predict(np.array([[0.3, 0.4]])))
+
+
+if __name__ == '__main__':
+    main()

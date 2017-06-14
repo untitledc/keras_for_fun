@@ -37,3 +37,31 @@ def draw_plot(predictor, title, filename, X, y, reso_step=0.01):
 
     plt.savefig(filename)
     plt.close()
+
+
+def main():
+    size = 30
+    dot_size = 20
+    color1 = plt.get_cmap('Reds')
+    alpha1 = 1
+    color2 = plt.get_cmap('Greens')
+    alpha2 = 0.5
+    xx, yy = np.meshgrid(np.arange(size), np.arange(size))
+    plt.scatter(xx.ravel(), yy.ravel(), c=xx.ravel()/size,
+                cmap=color1, s=dot_size)
+    plt.savefig('test.png')
+    plt.close()
+    plt.scatter(xx.ravel(), yy.ravel(), c=yy.ravel()/size,
+                cmap=color2, s=dot_size)
+    plt.savefig('test2.png')
+    plt.close()
+    plt.scatter(xx.ravel(), yy.ravel(), c=xx.ravel()/size,
+                cmap=color1, alpha=alpha1, s=dot_size)
+    plt.scatter(xx.ravel(), yy.ravel(), c=yy.ravel()/size,
+                cmap=color2, alpha=alpha2, s=dot_size)
+    plt.savefig('test3.png')
+    plt.close()
+
+
+if __name__ == '__main__':
+    main()

@@ -28,10 +28,6 @@ def get_iris(f1_idx=0, f2_idx=1):
 
 
 def get_separable_dummy(max_len=3):
-    X = np.array([[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [0, 2],
-                 [3, 1], [2, 2], [3, 2], [1, 3], [2, 3], [3, 3]])
-    y = np.array([0, 0, 0, 0, 0, 0,
-                  1, 1, 1, 1, 1, 1])
     xx, yy = np.meshgrid(np.arange(0, max_len),
                          np.arange(0, max_len))
     X = np.c_[xx.ravel(), yy.ravel()]
@@ -40,3 +36,17 @@ def get_separable_dummy(max_len=3):
     scaler = MinMaxScaler()
     X_scaled = scaler.fit_transform(X)
     return X_scaled, y
+
+
+def get_nested_squares():
+    X = np.array([[0, 0], [2, 0], [4, 0], [0, 2], [4, 2],
+                  [0, 4], [2, 4], [4, 4],
+                  [1, 1], [2, 1], [3, 1], [1, 2], [3, 2],
+                  [1, 3], [2, 3], [3, 3]])
+    y = np.array([0, 0, 0, 0, 0, 0, 0, 0,
+                  1, 1, 1, 1, 1, 1, 1, 1])
+
+    scaler = MinMaxScaler()
+    X_scaled = scaler.fit_transform(X)
+    return X_scaled, y
+

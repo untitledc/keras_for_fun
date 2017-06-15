@@ -50,3 +50,31 @@ def get_nested_squares():
     X_scaled = scaler.fit_transform(X)
     return X_scaled, y
 
+
+def get_many_nested_squares(pair_num=1):
+    data_list = []
+    label_list = []
+    for p in range(1, pair_num+1):
+        #edge_n = p + 1
+        #edge_n = 5
+        edge_n = 6 - p
+        outer_step = float(2*p) / (edge_n-1)
+        inner_step = float(2*p-1) / (edge_n-1)
+        for edge_i in range(edge_n-1):
+            data_list.extend([(-p+edge_i*outer_step, -p),
+                              (p, -p+edge_i*outer_step),
+                              (p-edge_i*outer_step, p),
+                              (-p, p-edge_i*outer_step)])
+            data_list.extend([(-p+0.5+edge_i*inner_step, -p+0.5),
+                              (p-0.5, -p+0.5+edge_i*inner_step),
+                              (p-0.5-edge_i*inner_step, p-0.5),
+                              (-p+0.5, p-0.5-edge_i*inner_step)])
+            label_list.extend([0]*4)
+            label_list.extend([1]*4)
+
+    X = np.array(data_list)
+    y = np.array(label_list)
+
+    scaler = MinMaxScaler()
+    X_scaled = scaler.fit_transform(X)
+    return X_scaled, y

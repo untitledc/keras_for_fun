@@ -18,9 +18,16 @@ def build_simple_relu_model(model, n_class, hidden_dim=2):
     model.add(Dense(n_class, activation='softmax'))
 
 
+def build_mlp_relu_model(model, n_class, hidden_dim=2, layer_num=1):
+    model.add(Dense(hidden_dim, activation='relu', input_dim=2))
+    for i in range(layer_num-1):
+        model.add(Dense(hidden_dim, activation='relu'))
+    model.add(Dense(n_class, activation='softmax'))
+
+
 def build_check_weight_model(model, n_class):
     model.add(Dense(3, activation='linear', input_dim=2))
-    model.add(Dense(4, activation='linear'))
+    model.add(Dense(4, activation='relu'))
     model.add(Dense(2, activation='softmax'))
 
 
@@ -53,16 +60,19 @@ def main():
     #X, y = demo_dataset.get_breast_cancer_last2()
     #X, y = demo_dataset.get_iris()
     #X, y = demo_dataset.get_separable_dummy(4)
-    X, y = demo_dataset.get_nested_squares()
+    #X, y = demo_dataset.get_nested_squares()
+    X, y = demo_dataset.get_many_nested_squares(3)
     n_class = len(set(y))
 
     model = Sequential()
     #build_check_weight_model(model, n_class)
     #build_mess_around_model2(model, n_class)
     #build_simple_linear_model(model, n_class)
-    build_simple_relu_model(model, n_class, 200)
     #build_simple_relu_model(model, n_class)
-    model.compile(optimizer='sgd', loss='categorical_crossentropy',
+    #build_simple_relu_model(model, n_class, 200)
+    build_mlp_relu_model(model, n_class, 200, 3)
+    #model.compile(optimizer='rmsprop', loss='categorical_crossentropy',
+    model.compile(optimizer='rmsprop', loss='mean_squared_error',
                   metrics=['accuracy'])
     model.fit(X, to_categorical(y, num_classes=n_class),
               batch_size=1,

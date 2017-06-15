@@ -78,3 +78,14 @@ def get_many_nested_squares(pair_num=1):
     scaler = MinMaxScaler()
     X_scaled = scaler.fit_transform(X)
     return X_scaled, y
+
+
+def get_interleaved_1d():
+    X = np.array([[0, 0], [2, 0], [4, 0],
+                  [1, 0], [3, 0], [5, 0]])
+    y = np.array([0, 0, 0, 1, 1, 1])
+
+    scaler = MinMaxScaler()
+    X_scaled = scaler.fit_transform(X)
+    return X_scaled, y
+

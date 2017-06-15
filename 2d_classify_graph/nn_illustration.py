@@ -18,6 +18,12 @@ def build_simple_relu_model(model, n_class, hidden_dim=2):
     model.add(Dense(n_class, activation='softmax'))
 
 
+def build_simple_regressor(model, hidden_dim=10):
+    model.add(Dense(hidden_dim, activation='relu', input_dim=2))
+    #model.add(Dense(hidden_dim, activation='sigmoid', input_dim=2))
+    model.add(Dense(1, activation='linear'))
+
+
 def build_mlp_relu_model(model, n_class, hidden_dim=2, layer_num=1):
     model.add(Dense(hidden_dim, activation='relu', input_dim=2))
     for i in range(layer_num-1):
@@ -57,11 +63,15 @@ def build_mess_around_model2(model, n_class):
 
 
 def main():
+    is_classified = False
+    print_weight = False
+
     #X, y = demo_dataset.get_breast_cancer_last2()
     #X, y = demo_dataset.get_iris()
     #X, y = demo_dataset.get_separable_dummy(4)
     #X, y = demo_dataset.get_nested_squares()
-    X, y = demo_dataset.get_many_nested_squares(3)
+    #X, y = demo_dataset.get_many_nested_squares(3)
+    X, y = demo_dataset.get_interleaved_1d()
     n_class = len(set(y))
 
     model = Sequential()
@@ -69,23 +79,33 @@ def main():
     #build_mess_around_model2(model, n_class)
     #build_simple_linear_model(model, n_class)
     #build_simple_relu_model(model, n_class)
-    #build_simple_relu_model(model, n_class, 200)
-    build_mlp_relu_model(model, n_class, 200, 3)
-    #model.compile(optimizer='rmsprop', loss='categorical_crossentropy',
-    model.compile(optimizer='rmsprop', loss='mean_squared_error',
-                  metrics=['accuracy'])
-    model.fit(X, to_categorical(y, num_classes=n_class),
-              batch_size=1,
-              epochs=50,
-              shuffle=True)
+    #build_simple_relu_model(model, n_class, 20)
+    #build_mlp_relu_model(model, n_class, 200, 3)
+    #build_mlp_relu_model(model, n_class, 200, 3)
+    build_simple_regressor(model, 200)
+    if is_classified:
+        model.compile(optimizer='sgd', loss='categorical_crossentropy',
+                      metrics=['accuracy'])
+        model.fit(X, to_categorical(y, num_classes=n_class),
+                  batch_size=1,
+                  epochs=50,
+                  shuffle=True)
+    else:
+        model.compile(optimizer='rmsprop', loss='mean_squared_error')
+        model.fit(X, y,
+                  batch_size=1,
+                  epochs=50,
+                  shuffle=True)
 
     print('model summary')
     model.summary()
-    print('model weights')
     model_weight_list = model.get_weights()
-    for model_weight in model_weight_list:
-        print(model_weight.shape)
-        print(model_weight)
+
+    if print_weight:
+        print('model weights')
+        for model_weight in model_weight_list:
+            print(model_weight.shape)
+            print(model_weight)
 
     # title for the plots
     title = 'FNN linear layer'
@@ -94,6 +114,16 @@ def main():
     draw_plot(model, title, plot_name, X, y, reso_step=0.005)
 
     #print(model.predict(np.array([[0.3, 0.4]])))
+    print(model.predict(np.array([[0.0, 0.0]])))
+    print(model.predict(np.array([[0.2, 0.0]])))
+    print(model.predict(np.array([[0.4, 0.0]])))
+    print(model.predict(np.array([[0.6, 0.0]])))
+    print(model.predict(np.array([[0.8, 0.0]])))
+    print(model.predict(np.array([[1.0, 0.0]])))
+    # for test_in in np.arange(0, 1.2, 0.2):
+    #     o1_before = test_in * model_weight_list[0][0] + model_weight_list[1]
+    #     o1 = np.array([b if b > 0 else 0 for b in o1_before])
+    #     print(o1.dot(model_weight_list[2])+model_weight_list[3])
 
 
 if __name__ == '__main__':

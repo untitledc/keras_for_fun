@@ -1,6 +1,7 @@
-from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers.advanced_activations import LeakyReLU
+from keras.models import Sequential
+from keras.optimizers import Adam, RMSprop
 from keras.utils import to_categorical
 import numpy as np
 
@@ -8,18 +9,24 @@ import demo_dataset
 from draw import draw_plot
 
 
-def build_simple_linear_model(model, n_class):
+def build_shallow_linear_model(model, n_class):
     model.add(Dense(2, activation='linear', input_dim=2))
     model.add(Dense(n_class, activation='softmax'))
 
 
-def build_simple_relu_model(model, n_class, hidden_dim=2):
+def build_shallow_relu_model(model, n_class, hidden_dim=2):
     model.add(Dense(hidden_dim, activation='relu', input_dim=2))
     model.add(Dense(n_class, activation='softmax'))
 
 
+def build_shallow_softplus_model(model, n_class, hidden_dim=2):
+    model.add(Dense(hidden_dim, activation='softplus', input_dim=2))
+    model.add(Dense(n_class, activation='softmax'))
+
+
 def build_simple_regressor(model, hidden_dim=10):
-    model.add(Dense(hidden_dim, activation='relu', input_dim=2))
+    model.add(Dense(hidden_dim, activation='softplus', input_dim=2))
+    #model.add(Dense(hidden_dim, activation='relu', input_dim=2))
     #model.add(Dense(hidden_dim, activation='sigmoid', input_dim=2))
     model.add(Dense(1, activation='linear'))
 
@@ -50,10 +57,17 @@ def build_mlp_relu_model(model, n_class, hidden_dim=2, layer_num=1):
     model.add(Dense(n_class, activation='softmax'))
 
 
+def build_mlp_softplus_model(model, n_class, hidden_dim=2, layer_num=1):
+    model.add(Dense(hidden_dim, activation='softplus', input_dim=2))
+    for i in range(layer_num-1):
+        model.add(Dense(hidden_dim, activation='softplus'))
+    model.add(Dense(n_class, activation='softmax'))
+
+
 def build_check_weight_model(model, n_class):
     model.add(Dense(3, activation='linear', input_dim=2))
     model.add(Dense(4, activation='relu'))
-    model.add(Dense(2, activation='softmax'))
+    model.add(Dense(n_class, activation='softmax'))
 
 
 def build_mess_around_model(model, n_class):
@@ -79,27 +93,50 @@ def build_mess_around_model2(model, n_class):
 
 
 def main():
-    is_classified = False
+    is_classified = True
     print_weight = False
+    demo = 'demo3'
 
     #X, y = demo_dataset.get_breast_cancer_last2()
     #X, y = demo_dataset.get_iris()
-    #X, y = demo_dataset.get_separable_dummy(4)
-    #X, y = demo_dataset.get_nested_squares()
-    #X, y = demo_dataset.get_many_nested_squares(3, edge_n_func=lambda p: p+1)
-    #X, y = demo_dataset.get_many_nested_squares(3, edge_n_func=lambda p: 6-p)
-    X, y = demo_dataset.get_interleaved_1d()
-    n_class = len(set(y))
+    #n_class = len(set(y))
+    #build_check_weight_model(model, n_class)
+    #build_shallow_linear_model(model, n_class)
 
     model = Sequential()
-    #build_check_weight_model(model, n_class)
-    #build_mess_around_model2(model, n_class)
-    #build_simple_linear_model(model, n_class)
-    #build_simple_relu_model(model, n_class)
-    #build_simple_relu_model(model, n_class, 20)
-    #build_mlp_relu_model(model, n_class, 200, 3)
-    #build_simple_regressor(model, 10)
-    build_my_init_regressor(model)
+    if demo == 'demo1':
+        X, y = demo_dataset.get_separable_dummy(7)
+        n_class = len(set(y))
+        #build_shallow_relu_model(model, n_class)
+        #build_shallow_softplus_model(model, n_class)
+        #build_mlp_relu_model(model, n_class, hidden_dim=2, layer_num=3)
+        #build_mlp_softplus_model(model, n_class, hidden_dim=2, layer_num=3)
+        #build_shallow_relu_model(model, n_class, 20)
+        build_shallow_softplus_model(model, n_class, 20)
+    elif demo == 'demo2':
+        X, y = demo_dataset.get_nested_squares()
+        n_class = len(set(y))
+        #build_shallow_relu_model(model, n_class, 200)
+        build_shallow_softplus_model(model, n_class, 200)
+        build_mlp_relu_model(model, n_class, hidden_dim=2, layer_num=20)
+        #build_mlp_relu_model(model, n_class, 20, 4)
+    elif demo == 'demo3':
+        X, y = demo_dataset.get_many_nested_squares(
+            3, edge_n_func=lambda p: p+5)
+        #X, y = demo_dataset.get_many_nested_squares(
+        #    3, edge_n_func=lambda p: 10-p)
+        n_class = len(set(y))
+        #build_shallow_relu_model(model, n_class, 400)
+        #build_mlp_relu_model(model, n_class, 200, 4)
+        #build_mess_around_model2(model, n_class)
+        #build_mlp_relu_model(model, n_class, 100, 3)
+        build_mlp_relu_model(model, n_class, 50, 5)
+    elif demo == 'demo4':
+        X, y = demo_dataset.get_interleaved_1d()
+        n_class = len(set(y))
+        #build_simple_regressor(model, 10)
+        build_my_init_regressor(model)
+        is_classified = False
 
     if print_weight:
         print('initial weights')
@@ -107,15 +144,18 @@ def main():
             print(model_weight.shape)
             print(model_weight)
 
+    #optimizer = RMSprop()
+    optimizer = Adam()
     if is_classified:
-        model.compile(optimizer='rmsprop', loss='categorical_crossentropy',
+        model.compile(optimizer=optimizer, loss='categorical_crossentropy',
                       metrics=['accuracy'])
-        model.fit(X, to_categorical(y, num_classes=n_class),
-                  batch_size=1,
-                  epochs=50,
-                  shuffle=True)
+        history = model.fit(X, to_categorical(y, num_classes=n_class),
+                            batch_size=1,
+                            epochs=50,
+                            shuffle=True)
+        print('training accuracy: {}'.format(history.history['acc'][-1]))
     else:
-        model.compile(optimizer='rmsprop', loss='mean_squared_error')
+        model.compile(optimizer=optimizer, loss='mean_squared_error')
         model.fit(X, y, batch_size=1, epochs=50, shuffle=True, verbose=0)
 
     print('model summary')
@@ -138,13 +178,13 @@ def main():
     draw_plot(model, title, plot_name, X, y, reso_step=0.005, draw_class=False)
 
     #print(model.predict(np.array([[0.3, 0.4]])))
-    print('prediction')
-    print(model.predict(np.array([[0.0, 0.0]])))
-    print(model.predict(np.array([[0.2, 0.0]])))
-    print(model.predict(np.array([[0.4, 0.0]])))
-    print(model.predict(np.array([[0.6, 0.0]])))
-    print(model.predict(np.array([[0.8, 0.0]])))
-    print(model.predict(np.array([[1.0, 0.0]])))
+    #print('prediction')
+    #print(model.predict(np.array([[0.0, 0.0]])))
+    #print(model.predict(np.array([[0.2, 0.0]])))
+    #print(model.predict(np.array([[0.4, 0.0]])))
+    #print(model.predict(np.array([[0.6, 0.0]])))
+    #print(model.predict(np.array([[0.8, 0.0]])))
+    #print(model.predict(np.array([[1.0, 0.0]])))
 
     #for test_in in np.arange(0, 1.2, 0.2):
     #    o1_before = test_in * model_weight_list[0][0] + model_weight_list[1]

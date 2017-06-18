@@ -33,7 +33,8 @@ def get_separable_dummy(max_len=3):
     X = np.c_[xx.ravel(), yy.ravel()]
     y = np.array([0 if x[0] + x[1] < max_len else 1 for x in X])
 
-    scaler = MinMaxScaler()
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    #scaler = MinMaxScaler(feature_range=(-1, 1))
     X_scaled = scaler.fit_transform(X)
     return X_scaled, y
 
@@ -77,7 +78,10 @@ def get_many_nested_squares(pair_num=1, edge_n_func=None):
     X = np.array(data_list)
     y = np.array(label_list)
 
-    scaler = MinMaxScaler()
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    #scaler = MinMaxScaler(feature_range=(-0.5, 0.5))
+    #scaler = MinMaxScaler(feature_range=(-1, 0))
+    #scaler = MinMaxScaler(feature_range=(0, 10))
     X_scaled = scaler.fit_transform(X)
     return X_scaled, y
 

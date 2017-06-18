@@ -9,7 +9,9 @@ from draw import draw_plot
 #X, y = demo_dataset.get_iris()
 #X, y = demo_dataset.get_separable_dummy(10)
 #X, y = demo_dataset.get_nested_squares()
-X, y = demo_dataset.get_many_nested_squares(3)
+#X, y = demo_dataset.get_many_nested_squares(3)
+X, y = demo_dataset.get_many_nested_squares(3, edge_n_func=lambda p: p+1)
+#X, y = demo_dataset.get_many_nested_squares(3, edge_n_func=lambda p: 6-p)
 
 rbf_svc = [svm.SVC(kernel='rbf', gamma=2**-7, C=2**13).fit(X, y),
            svm.SVC(kernel='rbf', gamma=2**4, C=2**13).fit(X, y),

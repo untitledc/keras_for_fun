@@ -51,13 +51,15 @@ def get_nested_squares():
     return X_scaled, y
 
 
-def get_many_nested_squares(pair_num=1):
+def get_many_nested_squares(pair_num=1, edge_n_func=None):
     data_list = []
     label_list = []
     for p in range(1, pair_num+1):
-        #edge_n = p + 1
-        #edge_n = 5
-        edge_n = 6 - p
+        if edge_n_func is None:
+            edge_n = 5
+        else:
+            edge_n = edge_n_func(p)
+
         outer_step = float(2*p) / (edge_n-1)
         inner_step = float(2*p-1) / (edge_n-1)
         for edge_i in range(edge_n-1):

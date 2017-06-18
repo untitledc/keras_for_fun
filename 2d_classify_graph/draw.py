@@ -1,36 +1,56 @@
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import matplotlib.colors
 import numpy as np
 
 
-def get_pred_classes(predictor, X):
+def get_pred(predictor, X, draw_class=True):
     pred = predictor.predict(X)
     if pred.ndim == 1:
         return pred
-    elif pred.ndim == 2:
-        return pred.argmax(axis=1)
+
+    if pred.ndim == 2:
+        if pred.shape[1] == 1:
+            return pred[:, 0]
+
+        if draw_class:
+            return pred.argmax(axis=1)
+        else:
+            return pred[:, 1]
     else:
         raise Exception('cannot recognize output of the predictor')
 
 
-def draw_plot(predictor, title, filename, X, y, reso_step=0.01):
+def draw_plot(predictor, title, filename, X, y, reso_step=0.01,
+              draw_class=True):
+    n_class = len(set(y))
+    if not draw_class and n_class > 2:
+        print('drawing real output value is not supported in multi-class')
+        return -1
+
+    cmap = plt.cm.Paired if n_class > 2 else plt.cm.RdBu
     # create a mesh to plot in
     x_min, x_max = X[:, 0].min() - 0.1, X[:, 0].max() + 0.1
     y_min, y_max = X[:, 1].min() - 0.1, X[:, 1].max() + 0.1
 
     xx, yy = np.meshgrid(np.arange(x_min, x_max, reso_step),
                          np.arange(y_min, y_max, reso_step))
-    pred_flat = get_pred_classes(predictor, np.c_[xx.ravel(), yy.ravel()])
+    pred_flat = get_pred(predictor, np.c_[xx.ravel(), yy.ravel()],
+                         draw_class=draw_class)
+    print('pred min: {0}, max: {1}'.format(min(pred_flat), max(pred_flat)))
 
     # Put the result into a color plot
     pred = pred_flat.reshape(xx.shape)
-    plt.imshow(pred, extent=(xx.min(), xx.max(), yy.min(), yy.max()),
-               origin='lower', interpolation='nearest',
-               cmap=plt.cm.Paired, alpha=0.5)
+    color_norm = matplotlib.colors.Normalize(0.0, 1.0, clip=True)
+    img = plt.imshow(pred, extent=(xx.min(), xx.max(), yy.min(), yy.max()),
+                     origin='lower', interpolation='nearest', cmap=cmap,
+                     norm=color_norm, alpha=0.5)
+    if not draw_class:
+        plt.colorbar(img, cmap=cmap, norm=color_norm)
 
     # Plot also the training points
-    plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.Paired, s=20)
+    plt.scatter(X[:, 0], X[:, 1], c=y, cmap=cmap, s=20)
     plt.xlim(xx.min(), xx.max())
     plt.ylim(yy.min(), yy.max())
     plt.title(title)

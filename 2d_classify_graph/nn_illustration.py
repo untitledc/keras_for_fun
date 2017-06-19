@@ -1,3 +1,4 @@
+from keras import initializers
 from keras.layers import Dense
 from keras.layers.advanced_activations import LeakyReLU
 from keras.models import Sequential
@@ -25,9 +26,10 @@ def build_shallow_softplus_model(model, n_class, hidden_dim=2):
 
 
 def build_simple_regressor(model, hidden_dim=10):
-    model.add(Dense(hidden_dim, activation='softplus', input_dim=2))
-    #model.add(Dense(hidden_dim, activation='relu', input_dim=2))
+    #model.add(Dense(hidden_dim, activation='softplus', input_dim=2))
     #model.add(Dense(hidden_dim, activation='sigmoid', input_dim=2))
+    model.add(Dense(hidden_dim, activation='relu', input_dim=2,
+                    bias_initializer=initializers.RandomUniform(1, 2)))
     model.add(Dense(1, activation='linear'))
 
 
@@ -92,16 +94,20 @@ def build_mess_around_model2(model, n_class):
     model.add(Dense(n_class, activation='softmax'))
 
 
+def build_mess_around_model3(model, n_class):
+    model.add(Dense(100, activation='relu', input_dim=2,
+                    bias_initializer=initializers.RandomUniform(0.1, 1)))
+    model.add(Dense(100, activation='relu',
+                    bias_initializer=initializers.RandomUniform(0.1, 1)))
+    model.add(Dense(100, activation='relu',
+                    bias_initializer=initializers.RandomUniform(0.1, 1)))
+    model.add(Dense(n_class, activation='softmax'))
+
+
 def main():
     is_classified = True
     print_weight = False
     demo = 'demo3'
-
-    #X, y = demo_dataset.get_breast_cancer_last2()
-    #X, y = demo_dataset.get_iris()
-    #n_class = len(set(y))
-    #build_check_weight_model(model, n_class)
-    #build_shallow_linear_model(model, n_class)
 
     model = Sequential()
     if demo == 'demo1':
@@ -122,7 +128,8 @@ def main():
         #build_mlp_relu_model(model, n_class, 20, 4)
     elif demo == 'demo3':
         X, y = demo_dataset.get_many_nested_squares(
-            3, edge_n_func=lambda p: p+5)
+            3, edge_n_func=lambda p: p+50)
+        #    3, edge_n_func=lambda p: p+5)
         #X, y = demo_dataset.get_many_nested_squares(
         #    3, edge_n_func=lambda p: 10-p)
         n_class = len(set(y))
@@ -130,12 +137,13 @@ def main():
         #build_mlp_relu_model(model, n_class, 200, 4)
         #build_mess_around_model2(model, n_class)
         #build_mlp_relu_model(model, n_class, 100, 3)
-        build_mlp_relu_model(model, n_class, 50, 5)
+        #build_mlp_relu_model(model, n_class, 50, 5)
+        build_mess_around_model3(model, n_class)
     elif demo == 'demo4':
         X, y = demo_dataset.get_interleaved_1d()
         n_class = len(set(y))
-        #build_simple_regressor(model, 10)
-        build_my_init_regressor(model)
+        build_simple_regressor(model, 10)
+        #build_my_init_regressor(model)
         is_classified = False
 
     if print_weight:
@@ -150,8 +158,8 @@ def main():
         model.compile(optimizer=optimizer, loss='categorical_crossentropy',
                       metrics=['accuracy'])
         history = model.fit(X, to_categorical(y, num_classes=n_class),
-                            batch_size=1,
-                            epochs=50,
+                            batch_size=16,
+                            epochs=400,
                             shuffle=True)
         print('training accuracy: {}'.format(history.history['acc'][-1]))
     else:

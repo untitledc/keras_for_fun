@@ -38,7 +38,7 @@ def draw_plot(predictor, title, filename, X, y, reso_step=0.01,
                          np.arange(y_min, y_max, reso_step))
     pred_flat = get_pred(predictor, np.c_[xx.ravel(), yy.ravel()],
                          draw_class=draw_class)
-    print('pred min: {0}, max: {1}'.format(min(pred_flat), max(pred_flat)))
+    #print('pred min: {0}, max: {1}'.format(min(pred_flat), max(pred_flat)))
 
     # Put the result into a color plot
     pred = pred_flat.reshape(xx.shape)

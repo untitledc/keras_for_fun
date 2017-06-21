@@ -23,6 +23,7 @@ EXP1_TIMESPENT_PATH_TMPL = os.path.join(
     HISTORY_PATH, 'exp1_d{ds}_bch{batch}_{round}-time.txt')
 
 EPOCHS_MAX = 5000
+TEST_ROUND_N = 9
 
 
 class OverfittedCheck(Callback):
@@ -60,21 +61,10 @@ def build_mlp_relu_model(n_class, hidden_dim=2, layer_num=1):
     return model
 
 
-def exp1():
+def exp1(hyper_params):
     optimizer = Adam()
 
-    d2b = {
-        1: [1, 2, 4, 8, 16, 32],
-        5: [1, 2, 4, 8, 16, 32, 64],
-        17: [1, 2, 4, 8, 16, 32, 64, 128, 256],
-        53: [1, 2, 4, 8, 16, 32, 64, 128, 256]
-    }
-    hyper_params = []
-    for d in d2b:
-        for b in d2b[d]:
-            hyper_params.append({'data_size_param': d, 'batch_size': b})
-
-    for test_round in range(10):
+    for test_round in range(TEST_ROUND_N):
         print('Test round {}'.format(test_round))
         for hyper_param in hyper_params:
             data_size_param = hyper_param['data_size_param']
@@ -129,6 +119,63 @@ def exp1():
                   draw_class=False)
 
 
+def summarize_exp1(hyper_params):
+    hp2epoch_list = {}
+    hp2med_epoch_index = {}
+    hp2time_list = {}
+
+    for hyper_param in hyper_params:
+        data_size_param = hyper_param['data_size_param']
+        batch_size = hyper_param['batch_size']
+        epoch_list = []
+        time_list = []
+
+        for test_round in range(TEST_ROUND_N):
+            history_path = EXP1_HISTORY_PATH_TMPL.format(
+                **{'ds': data_size_param, 'batch': batch_size,
+                   'round': test_round})
+            timespent_path = EXP1_TIMESPENT_PATH_TMPL.format(
+                **{'ds': data_size_param, 'batch': batch_size,
+                   'round': test_round})
+
+            with open(history_path) as f:
+                history = json.load(f)
+                epoch_list.append(len(history['acc']))
+            with open(timespent_path) as f:
+                t = f.readline().rstrip()
+                time_list.append(t)
+
+        hp2epoch_list[(data_size_param, batch_size)] = epoch_list
+        hp2time_list[(data_size_param, batch_size)] = time_list
+
+        med_i = sorted(range(TEST_ROUND_N),
+                       key=lambda i: epoch_list[i])[int((TEST_ROUND_N-1)/2)]
+        hp2med_epoch_index[(data_size_param, batch_size)] = med_i
+        #print('{}, {}: {}'.format(data_size_param, batch_size,
+        #                          sorted(epoch_list)))
+        print('{}, {}: {}'.format(data_size_param, batch_size,
+                                  time_list[med_i]))
+    #print(hp2epoch_list)
+    #print(hp2time_list)
+
+
+def set_exp1_hyperparams():
+    d2b = {
+        1: [1, 2, 4, 8, 16, 32],
+        5: [1, 2, 4, 8, 16, 32, 64],
+        17: [1, 2, 4, 8, 16, 32, 64, 128, 256],
+        53: [1, 2, 4, 8, 16, 32, 64, 128, 256]
+    }
+    hyper_params = []
+    for d in sorted(d2b.keys()):
+        for b in d2b[d]:
+            hyper_params.append({'data_size_param': d, 'batch_size': b})
+
+    return hyper_params
+
+
 if __name__ == '__main__':
-    exp1()
+    hp = set_exp1_hyperparams()
+    #exp1(hp)
+    summarize_exp1(hp)
     K.clear_session()

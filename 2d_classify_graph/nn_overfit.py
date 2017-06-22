@@ -196,7 +196,7 @@ def get_patience_list(loss_list):
         else:
             wait = wait + 1
             max_patience = max(max_patience, wait)
-            patience_list.append(max_patience)
+        patience_list.append(max_patience)
 
     return patience_list
 
